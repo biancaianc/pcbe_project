@@ -17,6 +17,7 @@ public class ClientApplication {
 
     private static ServerModel server;
     private static String name="";
+    private static String availableCommands="/list-list all users \n/help-display this";
 
 
     public static void main(String[] args) {
@@ -42,6 +43,11 @@ public class ClientApplication {
             String str = null;
             try {
                 str = br.readLine();
+                if(str.equals("/help")){
+
+                    System.out.println("Available commands: \n"+availableCommands);
+                    continue;
+                }
             } catch (IOException e) {
                 System.out.println("Could not read from stdin");
                 e.printStackTrace();
@@ -51,9 +57,12 @@ public class ClientApplication {
             server.getWriter().flush();
             try {
                 String resp = server.getReader().readLine();
-                if(resp.contains("Nickname") && resp.contains("success"))
+                if(resp.contains("Nickname") && resp.contains("success")) {
                     name = str;
+                    System.out.println("Type /help for help");
+                }
                 System.out.println(resp);
+
             } catch (IOException e) {
                 System.out.println("Could not read response from server. Make sure you do not have two instances of the client running.");
                 e.printStackTrace();

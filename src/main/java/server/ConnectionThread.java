@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.stream.Collectors;
 
 public class ConnectionThread extends Thread {
     private Socket clientSocket;
@@ -43,9 +44,15 @@ public class ConnectionThread extends Thread {
                         }
                         else
                         {
-                            System.out.println(client.getName()+": "+request);
-                            out.println("Request received but not yet treated");
+
+                            if(request.equals("/list"))
+                                out.println(ServerApplication.clients.stream().map(clt->clt.getName()).collect(Collectors.joining(",")));
+                            else {
+                                System.out.println(client.getName() + ": " + request);
+                                out.println("Request received but not yet treated");
+                            }
                             out.flush();
+
                         }
                     }
                 }catch(SocketException e) {
