@@ -17,7 +17,7 @@ public class ServerApplication {
 
     public static void main(String[] args) {
 
-        PingRecieverThread pingReciever = new PingRecieverThread();
+        PingReceiverThread pingReciever = new PingReceiverThread();
         pingReciever.start();
 
         System.out.println("Server is ready to accept clients.");
