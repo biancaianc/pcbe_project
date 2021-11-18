@@ -12,7 +12,7 @@ import java.util.Optional;
 
 import static common.ConnectionConstants.pingingPort;
 
-public class PingRecieverThread extends Thread{
+public class PingReceiverThread extends Thread{
 
     @Override
     public void run(){
