@@ -37,7 +37,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ProducerConfiguration</mainClass>
+                            <mainClass>common.ProducerConfiguration</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
