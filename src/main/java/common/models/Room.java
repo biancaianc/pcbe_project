@@ -3,21 +3,21 @@ package common.models;
 import java.util.List;
 
 public class Room {
-    private List<Client> clientList;
-    private Client owner;
+    private List<ClientModel> clientModelList;
+    private ClientModel owner;
     private String name;
 
-    public Room(List<Client> clientList, Client owner, String name) {
-        this.clientList = clientList;
+    public Room(List<ClientModel> clientModelList, ClientModel owner, String name) {
+        this.clientModelList = clientModelList;
         this.owner = owner;
         this.name = name;
     }
 
-    public List<Client> getClientList() {
-        return clientList;
+    public List<ClientModel> getClientList() {
+        return clientModelList;
     }
 
-    public Client getOwner() {
+    public ClientModel getOwner() {
         return owner;
     }
 
@@ -25,18 +25,18 @@ public class Room {
         return name;
     }
 
-    public void setClientList(List<Client> clientList) {
-        this.clientList = clientList;
+    public void setClientList(List<ClientModel> clientModelList) {
+        this.clientModelList = clientModelList;
     }
 
-    public void setOwner(Client owner) {
+    public void setOwner(ClientModel owner) {
         this.owner = owner;
     }
 
     public void setName(String name) {
         this.name = name;
     }
-    public void addClient(Client client){
-        this.clientList.add(client);
+    public void addClient(ClientModel clientModel){
+        this.clientModelList.add(clientModel);
     }
 }

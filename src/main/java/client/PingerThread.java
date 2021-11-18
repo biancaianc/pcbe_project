@@ -23,16 +23,18 @@ public class PingerThread extends Thread {
     public void run(){
         int fails = 0;
         while(fails<2) {
-            try (Socket socket = new Socket()) {
-                socket.connect(new InetSocketAddress(server.getAddress(), pingingPort), pingTimeout);
-                fails=0;
-            } catch (IOException e) {
-                fails++;
-            }
             try {
                 sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+            try  {
+                new Socket(server.getAddress(),pingingPort);
+                //TODO log ping sent
+                fails=0;
+            } catch (IOException e) {
+                //TODO log ping could not be sent
+                fails++;
             }
         }
         System.out.println("Pinging connection to server lost.");

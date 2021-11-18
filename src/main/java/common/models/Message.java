@@ -4,13 +4,13 @@ import java.util.Date;
 
 public class Message {
     private String message;
-    private Client sender;
+    private ClientModel sender;
     private Date date;
     private String type;
     private Room room;
 
 
-    public Message(String message, Client sender, Date date, String type, Room room) {
+    public Message(String message, ClientModel sender, Date date, String type, Room room) {
         this.message = message;
         this.sender = sender;
         this.date = date;
@@ -22,7 +22,7 @@ public class Message {
         return message;
     }
 
-    public Client getSender() {
+    public ClientModel getSender() {
         return sender;
     }
 

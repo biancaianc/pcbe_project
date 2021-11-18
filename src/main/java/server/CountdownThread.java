@@ -1,13 +1,13 @@
 package server;
 
-import common.models.Client;
+import common.models.ClientModel;
 
 public class CountdownThread extends Thread {
     private boolean gotPing;
-    private Client client;
+    private ClientModel clientModel;
 
-    public CountdownThread(Client client) {
-        this.client=client;
+    public CountdownThread(ClientModel clientModel) {
+        this.clientModel = clientModel;
     }
 
     public void run(){
@@ -19,10 +19,10 @@ public class CountdownThread extends Thread {
                 e.printStackTrace();
             }
         } while(gotPing);
-        client.die();
+        clientModel.die();
     }
 
-    public void getPing(){
+    public void getPinged(){
         gotPing = true;
     }
 }
