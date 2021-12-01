@@ -6,8 +6,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Optional;
 import java.net.SocketException;
 import java.util.stream.Collectors;
 
@@ -45,11 +45,28 @@ public class ConnectionThread extends Thread {
                         else
                         {
 
-                            if(request.equals("/list"))
-                                out.println(ServerApplication.clients.stream().map(clt->clt.getName()).collect(Collectors.joining(",")));
-                            else {
-                                System.out.println(client.getName() + ": " + request);
-                                out.println("Request received but not yet treated");
+                            if(request.equals("/list")) {
+                                out.println(ServerApplication.clients.stream().map(clt -> clt.getName()).collect(Collectors.joining(",")));
+                            }else {
+                                if(request.startsWith("/msg ")) {
+                                    Optional<ClientModel> userOptional = findUserByName(request.substring(5));
+                                    if(userOptional.isPresent()) {
+                                        ClientModel user = userOptional.get();
+                                        // TOPIC NAME
+                                        user.getMessagingThread().send("Ba un fraier te vrea(cu el in conversatie)");
+
+                                        System.out.println("DA");
+                                        out.println("DA");
+                                    }
+                                    else {
+                                        System.out.println("NU");
+                                        out.println("NU");
+                                    }
+                                }
+                                else {
+                                    System.out.println(client.getName() + ": " + request);
+                                    out.println("Request received but not yet treated");
+                                }
                             }
                             out.flush();
 
@@ -79,6 +96,14 @@ public class ConnectionThread extends Thread {
         }
         System.out.println("uhmmm messaging died2");
 
+    }
+
+    private Optional<ClientModel> findUserByName(String substring) {
+        return ServerApplication.clients.stream().filter(clt-> clt!=client && clt.getName().equals(substring)).findAny();
+    }
+
+    private void send(String message){
+        out.println(message);
     }
 
 }

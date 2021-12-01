@@ -34,10 +34,16 @@ public class ClientModel {
         return name;
     }
 
+    public ConnectionThread getMessagingThread(){
+        return messagingThread;
+    }
+
     public void getPinged(){
         //TODO log recieved pings
         pingCheckerThread.getPinged();
     }
+
+
 
     public void die(){
         pingCheckerThread.interrupt();
