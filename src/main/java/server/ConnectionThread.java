@@ -53,10 +53,10 @@ public class ConnectionThread extends Thread {
                                     if(userOptional.isPresent()) {
                                         ClientModel user = userOptional.get();
                                         // TOPIC NAME
-                                        user.getMessagingThread().send("Ba un fraier te vrea(cu el in conversatie)");
+                                        user.getMessagingThread().send(createTopicNames(user,client));
 
-                                        System.out.println("DA");
-                                        out.println("DA");
+                                        System.out.println("s-a creat un topic intre "+client.getName()+" si "+user.getName());
+                                        out.println(createTopicNames(client,user));
                                     }
                                     else {
                                         System.out.println("NU");
@@ -96,6 +96,10 @@ public class ConnectionThread extends Thread {
         }
         System.out.println("uhmmm messaging died2");
 
+    }
+
+    private String createTopicNames(ClientModel client, ClientModel user) {
+        return "Successfully created topics p=\""+client.getName()+"_"+user.getName() + "\", c=\""+user.getName()+"_"+client.getName()+"\".";
     }
 
     private Optional<ClientModel> findUserByName(String substring) {

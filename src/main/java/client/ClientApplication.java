@@ -38,6 +38,12 @@ public class ClientApplication {
 
         while(connectionChecker.isAlive()) {
 
+            if(scannerThread.getCurrentState() == ScannerThread.clientState.WaitingForRoom ||
+                    scannerThread.getCurrentState() == ScannerThread.clientState.InConversation)
+                continue;
+
+            System.out.println("Current state is " + scannerThread.getCurrentState());
+
             String readText = null;
             try {
                 readText = systemInReader.readLine();
