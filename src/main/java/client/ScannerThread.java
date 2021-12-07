@@ -73,6 +73,7 @@ public class ScannerThread extends Thread{
 
                     state = clientState.InConversation;
                     ProducerThread pt = new ProducerThread(producerThreadName);
+                    pt.start();
 
 
                 }
