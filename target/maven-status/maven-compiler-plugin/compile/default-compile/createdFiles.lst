@@ -1,4 +1,7 @@
-Main.class
-ProducerConfiguration.class
 ConsumerConfiguration.class
 ConsumerConfiguration$ConsumerThread.class
+models\Client.class
+ProducerConfiguration.class
+Server.class
+models\Room.class
+models\Message.class

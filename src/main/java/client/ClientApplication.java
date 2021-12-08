@@ -5,9 +5,6 @@ import common.models.ServerModel;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.util.Scanner;
 
 import static common.ConnectionConstants.pingingPort;
 
@@ -16,8 +13,8 @@ public class ClientApplication {
     private static final String expectedArgsMeanings = "<ip>";
 
     private static ServerModel server;
-    private static String name="";
-    private static String availableCommands="/list-list all users \n/help-display this";
+    public static String name="";
+    private static String availableCommands="/list-list all users \n/help-display this \n/name-display user name\n/msg-create a private chat";
 
 
     public static void main(String[] args) {
@@ -35,39 +32,48 @@ public class ClientApplication {
         connectionChecker.start();
         System.out.println("Connected to server successfully. Please select a nickname.");
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));//stdin reader
+        BufferedReader systemInReader = new BufferedReader(new InputStreamReader(System.in));//stdin reader
+        ScannerThread scannerThread = new ScannerThread(server.getReader());
+        scannerThread.start();
 
         while(connectionChecker.isAlive()) {
 
-            System.out.print(name + ": ");
-            String str = null;
-            try {
-                str = br.readLine();
-                if(str.equals("/help")){
+            if(scannerThread.getCurrentState() == ScannerThread.clientState.WaitingForRoom ||
+                    scannerThread.getCurrentState() == ScannerThread.clientState.InConversation)
+                continue;
 
+            System.out.println("Current state is " + scannerThread.getCurrentState());
+
+            String readText = null;
+            try {
+                readText = systemInReader.readLine();
+                //local commands
+                if(readText.equals("/help")){
                     System.out.println("Available commands: \n"+availableCommands);
                     continue;
                 }
+                if(readText.equals("/name")){
+                    System.out.println("Your name is: " + name );
+                    continue;
+                }
+
+                scannerThread.setLastRequest(readText);
+                //server commands
+                if(readText.equals("/list")){
+                    scannerThread.setState(ScannerThread.clientState.WaitingForList);
+                } else if(readText.startsWith("/msg ")){
+                    scannerThread.setState(ScannerThread.clientState.WaitingForRoom);
+                }
+
+
             } catch (IOException e) {
                 System.out.println("Could not read from stdin");
                 e.printStackTrace();
             }
-
-            server.getWriter().println(str);
+//            System.out.println("****sent to server:"+readText+"****");
+            server.getWriter().println(readText);
             server.getWriter().flush();
-            try {
-                String resp = server.getReader().readLine();
-                if(resp.contains("Nickname") && resp.contains("success")) {
-                    name = str;
-                    System.out.println("Type /help for help");
-                }
-                System.out.println(resp);
 
-            } catch (IOException e) {
-                System.out.println("Could not read response from server. Make sure you do not have two instances of the client running.");
-                e.printStackTrace();
-            }
-            //do stuff
         }
     }
 
