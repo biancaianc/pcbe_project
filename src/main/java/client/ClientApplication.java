@@ -1,13 +1,15 @@
 package client;
 
+import common.kafka.KafkaTopic;
 import common.models.ServerModel;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static common.ConnectionConstants.pingingPort;
 
@@ -15,10 +17,16 @@ public class ClientApplication {
     private static final int expectedArgs = 1;
     private static final String expectedArgsMeanings = "<ip>";
 
-    private static ServerModel server;
-    private static String name="";
-    private static String availableCommands="/list-list all users \n/help-display this";
+    private static List<KafkaTopic> topics = new ArrayList<>();
 
+    private static ServerModel server;
+
+    public static String name="";
+    private static String availableCommands="/list-list all users \n/help-display this \n/name-display user name\n/msg-create a private chat";
+
+    public static List<KafkaTopic> getTopics() {
+        return topics;
+    }
 
     public static void main(String[] args) {
         checkArguments(args);
@@ -35,39 +43,70 @@ public class ClientApplication {
         connectionChecker.start();
         System.out.println("Connected to server successfully. Please select a nickname.");
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));//stdin reader
+        BufferedReader systemInReader = new BufferedReader(new InputStreamReader(System.in));//stdin reader
+        ScannerThread scannerThread = new ScannerThread(server.getReader());
+        scannerThread.start();
 
         while(connectionChecker.isAlive()) {
 
-            System.out.print(name + ": ");
-            String str = null;
-            try {
-                str = br.readLine();
-                if(str.equals("/help")){
+            if(scannerThread.getCurrentState() == ScannerThread.clientState.WaitingForRoom ||
+                    scannerThread.getCurrentState() == ScannerThread.clientState.InConversation)
+                continue;
 
+//            System.out.println("Current state is " + scannerThread.getCurrentState());
+
+            String readText = null;
+            try {
+                readText = systemInReader.readLine();
+                //local commands
+                if(readText.equals("/help")){
                     System.out.println("Available commands: \n"+availableCommands);
                     continue;
                 }
+                if(readText.equals("/name")){
+                    System.out.println("Your name is: " + name );
+                    continue;
+                }
+                if(readText.equals("/mymessages")){
+                    topics.stream()
+                            .filter(topic->topic.getUnreadMessageCount()>0)
+                            .forEachOrdered(topic-> System.out.println(topic.getConnectedUserName()+" -> "+topic.getUnreadMessageCount()+" new messages"));
+                    continue;
+                }
+
+                scannerThread.setLastRequest(readText);
+                //server commands
+                if(readText.equals("/list")){
+                    scannerThread.setState(ScannerThread.clientState.WaitingForList);
+                } else if(readText.startsWith("/msg ")){
+                    final String userToConnect = readText.substring(5);
+                    Optional<KafkaTopic> topic = topics.stream().filter(kafkaTopic -> kafkaTopic.getConnectedUserName().equals(userToConnect)).findAny();
+                    if(topic.isPresent()) {
+                        topic.get().printUnreadMessages();
+                        if (topic.get().getPt().isAlive())
+                            topic.get().getPt().resume();
+                        else
+                            topic.get().getPt().start();
+                        scannerThread.setState(ScannerThread.clientState.InConversation);
+                        continue;
+                    }
+                    else {
+                        scannerThread.setState(ScannerThread.clientState.WaitingForRoom);
+                    }
+
+                }
+
+
+
+
             } catch (IOException e) {
                 System.out.println("Could not read from stdin");
                 e.printStackTrace();
             }
-
-            server.getWriter().println(str);
+//            System.out.println("****sent to server:"+readText+"****");
+            server.getWriter().println(readText);
             server.getWriter().flush();
-            try {
-                String resp = server.getReader().readLine();
-                if(resp.contains("Nickname") && resp.contains("success")) {
-                    name = str;
-                    System.out.println("Type /help for help");
-                }
-                System.out.println(resp);
 
-            } catch (IOException e) {
-                System.out.println("Could not read response from server. Make sure you do not have two instances of the client running.");
-                e.printStackTrace();
-            }
-            //do stuff
         }
     }
 
