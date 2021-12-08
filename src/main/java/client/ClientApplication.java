@@ -1,10 +1,15 @@
 package client;
 
+import common.kafka.KafkaTopic;
 import common.models.ServerModel;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static common.ConnectionConstants.pingingPort;
 
@@ -12,10 +17,16 @@ public class ClientApplication {
     private static final int expectedArgs = 1;
     private static final String expectedArgsMeanings = "<ip>";
 
+    private static List<KafkaTopic> topics = new ArrayList<>();
+
     private static ServerModel server;
+
     public static String name="";
     private static String availableCommands="/list-list all users \n/help-display this \n/name-display user name\n/msg-create a private chat";
 
+    public static List<KafkaTopic> getTopics() {
+        return topics;
+    }
 
     public static void main(String[] args) {
         checkArguments(args);
@@ -42,7 +53,7 @@ public class ClientApplication {
                     scannerThread.getCurrentState() == ScannerThread.clientState.InConversation)
                 continue;
 
-            System.out.println("Current state is " + scannerThread.getCurrentState());
+//            System.out.println("Current state is " + scannerThread.getCurrentState());
 
             String readText = null;
             try {
@@ -56,14 +67,36 @@ public class ClientApplication {
                     System.out.println("Your name is: " + name );
                     continue;
                 }
+                if(readText.equals("/mymessages")){
+                    topics.stream()
+                            .filter(topic->topic.getUnreadMessageCount()>0)
+                            .forEachOrdered(topic-> System.out.println(topic.getConnectedUserName()+" -> "+topic.getUnreadMessageCount()+" new messages"));
+                    continue;
+                }
 
                 scannerThread.setLastRequest(readText);
                 //server commands
                 if(readText.equals("/list")){
                     scannerThread.setState(ScannerThread.clientState.WaitingForList);
                 } else if(readText.startsWith("/msg ")){
-                    scannerThread.setState(ScannerThread.clientState.WaitingForRoom);
+                    final String userToConnect = readText.substring(5);
+                    Optional<KafkaTopic> topic = topics.stream().filter(kafkaTopic -> kafkaTopic.getConnectedUserName().equals(userToConnect)).findAny();
+                    if(topic.isPresent()) {
+                        topic.get().printUnreadMessages();
+                        if (topic.get().getPt().isAlive())
+                            topic.get().getPt().resume();
+                        else
+                            topic.get().getPt().start();
+                        scannerThread.setState(ScannerThread.clientState.InConversation);
+                        continue;
+                    }
+                    else {
+                        scannerThread.setState(ScannerThread.clientState.WaitingForRoom);
+                    }
+
                 }
+
+
 
 
             } catch (IOException e) {

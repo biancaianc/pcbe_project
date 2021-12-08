@@ -13,9 +13,11 @@ import java.util.Properties;
 public class ConsumerThread extends Thread{
     private String topicName;
     private KafkaConsumer<String,String> kafkaConsumer;
+    private KafkaTopic topic;
 
-    public ConsumerThread(String topicName){
+    public ConsumerThread(String topicName, KafkaTopic topic){
         this.topicName = topicName;
+        this.topic = topic;
     }
     public void run() {
         Properties configProperties = new Properties();
@@ -33,7 +35,14 @@ public class ConsumerThread extends Thread{
             while (true) {
                 ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(100));
                 for (ConsumerRecord<String, String> record : records)
-                    System.out.println(record.value());
+                {
+                    if(topic.isActive())
+                        System.out.println(topic.getConnectedUserName()+": "+record.value());
+                    else {
+                        System.out.println("new message received.");
+                        topic.addUnreadMessage(record.value());
+                    }
+                }
             }
         }catch(WakeupException ex){
             System.out.println("Exception caught " + ex.getMessage());

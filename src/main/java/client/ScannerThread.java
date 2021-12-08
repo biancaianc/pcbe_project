@@ -1,10 +1,13 @@
 package client;
 
 import common.kafka.ConsumerThread;
+import common.kafka.KafkaTopic;
 import common.kafka.ProducerThread;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+
+import static client.ClientApplication.getTopics;
 
 public class ScannerThread extends Thread{
     public enum clientState { Idle, Unnamed, WaitingForList, WaitingForRoom, InConversation }
@@ -49,7 +52,6 @@ public class ScannerThread extends Thread{
                         break;
                     case WaitingForRoom:
                         System.out.println(resp);
-//                        state = clientState.Idle;
                     default:
                         System.out.println(resp);
                         break;
@@ -63,17 +65,26 @@ public class ScannerThread extends Thread{
 //                    System.out.println(producerThreadName);
 
 
-
-
                     String consumerThreadName = resp.substring(0,resp.lastIndexOf("\""));
                     consumerThreadName = consumerThreadName.substring(consumerThreadName.lastIndexOf("\"")+1);
 //                    System.out.println(consumerThreadName);
 
-                    new ConsumerThread(consumerThreadName).start();
 
-                    state = clientState.InConversation;
-                    ProducerThread pt = new ProducerThread(producerThreadName);
-                    pt.start();
+                    if(state!=clientState.WaitingForRoom)
+                    {
+                        System.out.println("You have joined a conversation with user ");
+                    }
+
+                    String consumerName = consumerThreadName.substring(0,consumerThreadName.indexOf("_"));
+                    KafkaTopic topic = new KafkaTopic(consumerName,consumerThreadName,producerThreadName,state==clientState.WaitingForRoom, this);
+
+                    getTopics().add(topic);
+                    topic.setActive(state==clientState.WaitingForRoom);
+                    System.out.println("NEW TOPIC CREATED " + producerThreadName);
+
+                    if(state==clientState.WaitingForRoom)
+                        state=clientState.InConversation;
+
 
 
                 }
