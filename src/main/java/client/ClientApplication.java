@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +21,11 @@ public class ClientApplication {
     private static ServerModel server;
 
     public static String name="";
-    private static String availableCommands="/list-list all users \n/help-display this \n/name-display user name\n/msg-create a private chat";
+    private static String availableCommands="/list-list all users \n" +
+            "/help-display this \n" +
+            "/name-display user name\n" +
+            "/msg-create a private chat or join an existing one\n" +
+            "/msg everyone-open the global chat room\n";
 
     public static List<KafkaTopic> getTopics() {
         return topics;
@@ -31,7 +34,7 @@ public class ClientApplication {
     public static void main(String[] args) {
         checkArguments(args);
         printWelcome(args);
-
+            //
         try {
             server = new ServerModel(args[0]); //constructor also creates the communication socket
         } catch (IOException e) {
@@ -80,8 +83,19 @@ public class ClientApplication {
                     scannerThread.setState(ScannerThread.clientState.WaitingForList);
                 } else if(readText.startsWith("/msg ")){
                     final String userToConnect = readText.substring(5);
+                    if(userToConnect.equals("everyone")) {
+                        topics.get(0).setActive(true);
+                        topics.get(0).printUnreadMessages();
+                        if (topics.get(0).getPt().isAlive())
+                            topics.get(0).getPt().resume();
+                        else
+                            topics.get(0).getPt().start();
+                        scannerThread.setState(ScannerThread.clientState.InConversation);
+                        continue;
+                    }
+
                     Optional<KafkaTopic> topic = topics.stream().filter(kafkaTopic -> kafkaTopic.getConnectedUserName().equals(userToConnect)).findAny();
-                    if(topic.isPresent()) {
+                    if (topic.isPresent()) {
                         topic.get().printUnreadMessages();
                         if (topic.get().getPt().isAlive())
                             topic.get().getPt().resume();
@@ -93,6 +107,7 @@ public class ClientApplication {
                     else {
                         scannerThread.setState(ScannerThread.clientState.WaitingForRoom);
                     }
+
 
                 }
 
@@ -108,6 +123,7 @@ public class ClientApplication {
             server.getWriter().flush();
 
         }
+
     }
 
     private static void checkArguments(String[] args) {
