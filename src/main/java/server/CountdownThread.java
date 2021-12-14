@@ -19,6 +19,7 @@ public class CountdownThread extends Thread {
             while (iterator.hasNext()) {
                 ClientModel client=iterator.next();
                 if (!client.checkLiveliness()) {
+                    System.out.println(client.toString() + " was removed due to inactivity.");
                     clients.remove(client);
                 }
                 try {

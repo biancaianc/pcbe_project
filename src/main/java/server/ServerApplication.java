@@ -33,10 +33,10 @@ public class ServerApplication {
             {
                     Socket clientSocket = serverSocket.accept();
                     //UNCOMMENT THESE LINES TO MAKE CLIENTS ONLY WORK ON SEPARATE MACHINES. COMMENTED THEM FOR DEBUGGING.
-//                    if(!clientExists(clientSocket.getInetAddress().toString()))
+                    if(!clientExists(clientSocket.getInetAddress().toString()))
                         clients.add(new ClientModel(clientSocket,generalConsumerGroup++));
-//                    else
-//                        clientSocket.close();
+                    else
+                        clientSocket.close();
             }
         } catch (IOException e) {
             e.printStackTrace();

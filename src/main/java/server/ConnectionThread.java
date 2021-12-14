@@ -68,8 +68,7 @@ public class ConnectionThread extends Thread {
                                     }
                                 }
                                 else {
-                                    System.out.println(client.getName() + ": " + request);
-                                    out.println("Request received but not yet treated");
+                                    out.println("Unknown command. Use /help to see available commands.");
                                 }
                             }
                             out.flush();
