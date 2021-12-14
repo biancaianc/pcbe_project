@@ -7,18 +7,21 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static common.ConnectionConstants.communicationPort;
 
 public class ServerApplication {
 
-    public static List<ClientModel> clients = new ArrayList<>();
-
+    private static int generalConsumerGroup=0;
+    public static ConcurrentLinkedQueue<ClientModel> clients = new ConcurrentLinkedQueue<>();
 
     public static void main(String[] args) {
 
-        PingReceiverThread pingReciever = new PingReceiverThread();
-        pingReciever.start();
+        PingReceiverThread pingReceiver = new PingReceiverThread();
+        pingReceiver.start();
+        CountdownThread countdownThread = new CountdownThread(clients);
+        countdownThread.start();
 
         System.out.println("Server is ready to accept clients.");
 
@@ -30,10 +33,10 @@ public class ServerApplication {
             {
                     Socket clientSocket = serverSocket.accept();
                     //UNCOMMENT THESE LINES TO MAKE CLIENTS ONLY WORK ON SEPARATE MACHINES. COMMENTED THEM FOR DEBUGGING.
-//                    if(!clientExists(clientSocket.getInetAddress().toString()))
-                        clients.add(new ClientModel(clientSocket));
-//                    else
-//                        clientSocket.close();
+                    if(!clientExists(clientSocket.getInetAddress().toString()))
+                        clients.add(new ClientModel(clientSocket,generalConsumerGroup++));
+                    else
+                        clientSocket.close();
             }
         } catch (IOException e) {
             e.printStackTrace();

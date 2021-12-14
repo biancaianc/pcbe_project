@@ -1,5 +1,6 @@
 package common.kafka;
 
+import client.ClientApplication;
 import client.ScannerThread;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -13,10 +14,12 @@ public class ProducerThread extends Thread {
     private static Scanner in;
     private String topicName;
     private ScannerThread scannerThread;
+    private KafkaTopic topic;
 
-    public ProducerThread(String topicName, ScannerThread scannerThread) {
+    public ProducerThread(String topicName, KafkaTopic topic, ScannerThread scannerThread) {
         this.topicName = topicName;
         this.scannerThread = scannerThread;
+        this.topic=topic;
     }
 
     public void run() {
@@ -36,6 +39,7 @@ public class ProducerThread extends Thread {
             if (line.equals("/exit")) {
                 scannerThread.setState(ScannerThread.clientState.Idle);
                 System.out.println("You have left the conversation.");
+                topic.setActive(false);
                 this.suspend();
 
             } else if (line.equals("/help")) {
@@ -43,7 +47,7 @@ public class ProducerThread extends Thread {
                 System.out.println("Available commands: \n"+availableCommands);
 
             } else {
-                ProducerRecord<String, String> rec = new ProducerRecord<String, String>(this.topicName, line);
+                ProducerRecord<String, String> rec = new ProducerRecord<String, String>(this.topicName, ClientApplication.name+": "+line);
                 producer.send(rec);
             }
 

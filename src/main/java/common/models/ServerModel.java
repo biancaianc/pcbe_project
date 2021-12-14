@@ -1,5 +1,7 @@
 package common.models;
 
+import server.CountdownThread;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,12 +16,12 @@ public class ServerModel {
 
     private PrintWriter writer;
     private BufferedReader reader;
-
     public ServerModel(String address) throws IOException {
         this.address = address;
         this.connectionSocket = new Socket(address, communicationPort);
         writer = new PrintWriter(connectionSocket.getOutputStream(), true);
         reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+
     }
 
     public String getAddress() {

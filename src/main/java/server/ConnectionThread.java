@@ -20,13 +20,18 @@ public class ConnectionThread extends Thread {
     public ConnectionThread(Socket socket, ClientModel client) {
         this.clientSocket = socket;
         this.client = client;
+
+        try {
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void run() {
         try {
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             while (clientSocket.isConnected()) {
                 try {
                     String request = in.readLine();
@@ -59,13 +64,11 @@ public class ConnectionThread extends Thread {
                                         out.println(createTopicNames(client,user));
                                     }
                                     else {
-                                        System.out.println("NU");
-                                        out.println("NU");
+                                        out.println("Could not create a topic for conversation!");
                                     }
                                 }
                                 else {
-                                    System.out.println(client.getName() + ": " + request);
-                                    out.println("Request received but not yet treated");
+                                    out.println("Unknown command. Use /help to see available commands.");
                                 }
                             }
                             out.flush();
@@ -74,7 +77,6 @@ public class ConnectionThread extends Thread {
                     }
                 }catch(SocketException e) {
                     System.out.println("Exception for "+client.toString()+":\n"+e.getMessage());
-                    client.die();
                     return;
                     /* Should be replaced with more elegant future solution. ex:
                     try {
@@ -106,7 +108,7 @@ public class ConnectionThread extends Thread {
         return ServerApplication.clients.stream().filter(clt-> clt!=client && clt.getName().equals(substring)).findAny();
     }
 
-    private void send(String message){
+    public void send(String message){
         out.println(message);
     }
 

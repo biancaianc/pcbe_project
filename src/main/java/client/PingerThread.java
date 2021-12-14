@@ -13,10 +13,8 @@ import static common.ConnectionConstants.pingingPort;
 
 public class PingerThread extends Thread {
     private ServerModel server;
-
     public PingerThread(ServerModel server) {
         this.server=server;
-
     }
 
     @Override

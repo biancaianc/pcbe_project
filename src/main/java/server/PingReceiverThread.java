@@ -23,7 +23,6 @@ public class PingReceiverThread extends Thread{
                 Socket socket = pingSocket.accept();
                 String ip = socket.getInetAddress().toString();
                 //TODO debug as INFO : recieved ping from <ip>
-
                 ServerApplication.clients.stream().filter((clt)->clt.getAddress().equals(ip)).forEach(ClientModel::getPinged);
                 socket.close();
             }

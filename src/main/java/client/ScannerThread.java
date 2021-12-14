@@ -37,11 +37,11 @@ public class ScannerThread extends Thread{
         while(true) {
             try {
                 String resp = reader.readLine();
-//            System.out.println("****"+resp+"****");
+
                 switch (state) {
                     case Unnamed:
                         System.out.println(resp);
-                        if (resp.contains("success")) {
+                        if (resp.contains("saved successfully")) {
                             ClientApplication.name = lastRequest;
                             state = clientState.Idle;
                         }
@@ -52,9 +52,22 @@ public class ScannerThread extends Thread{
                         break;
                     case WaitingForRoom:
                         System.out.println(resp);
+                        if(resp.contains("Could not create a topic")){
+                            state=clientState.Idle;
+                        }
+                        break;
                     default:
                         System.out.println(resp);
                         break;
+                }
+
+                if(resp.contains("general thread"))
+                {
+                    String consumerName = "everyone";
+                    String producerThreadName = "general";
+                    String consumerThreadName = "general";
+                    KafkaTopic topic = new KafkaTopic(consumerName,consumerThreadName,producerThreadName,false,this, resp.substring(resp.indexOf(":")+2));
+                    getTopics().add(topic);
                 }
 
 
@@ -70,12 +83,12 @@ public class ScannerThread extends Thread{
 //                    System.out.println(consumerThreadName);
 
 
+                    String consumerName = consumerThreadName.substring(0,consumerThreadName.indexOf("_"));
                     if(state!=clientState.WaitingForRoom)
                     {
-                        System.out.println("You have joined a conversation with user ");
+                        System.out.println("You have joined a conversation with user " + consumerName);
                     }
 
-                    String consumerName = consumerThreadName.substring(0,consumerThreadName.indexOf("_"));
                     KafkaTopic topic = new KafkaTopic(consumerName,consumerThreadName,producerThreadName,state==clientState.WaitingForRoom, this);
 
                     getTopics().add(topic);

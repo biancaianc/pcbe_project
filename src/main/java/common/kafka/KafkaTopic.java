@@ -53,13 +53,22 @@ public class KafkaTopic {
         this.connectedUserName = connectedUserName;
         this.ct = new ConsumerThread(consumerThreadName, this);
         this.ct.start();
-        this.pt = new ProducerThread(producerThreadName,st);
+        this.pt = new ProducerThread(producerThreadName,this, st);
+        if(startNow)
+            pt.start();
+    }
+
+    public KafkaTopic(String connectedUserName, String consumerThreadName, String producerThreadName, boolean startNow, ScannerThread st, String consumerGroupId) {
+        this.connectedUserName = connectedUserName;
+        this.ct = new ConsumerThread(consumerThreadName, this, consumerGroupId);
+        this.ct.start();
+        this.pt = new ProducerThread(producerThreadName,this, st);
         if(startNow)
             pt.start();
     }
 
     public void printUnreadMessages(){
-        unreadMessages.forEach(msg -> System.out.println(connectedUserName + ": " + msg));
+        unreadMessages.forEach(msg -> System.out.println(msg));
         unreadMessageCount=0;
     }
 

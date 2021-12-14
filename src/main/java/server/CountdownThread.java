@@ -2,27 +2,33 @@ package server;
 
 import common.models.ClientModel;
 
-public class CountdownThread extends Thread {
-    private boolean gotPing;
-    private ClientModel clientModel;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-    public CountdownThread(ClientModel clientModel) {
-        this.clientModel = clientModel;
+public class CountdownThread extends Thread {
+    private final ConcurrentLinkedQueue<ClientModel> clients;
+
+    public CountdownThread(ConcurrentLinkedQueue<ClientModel> clients) {
+        this.clients=clients;
     }
 
     public void run(){
-        do {
-            try {
-                gotPing = false;
-                sleep(1500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        while(true){
+            Iterator<ClientModel> iterator = clients.iterator();
+
+            while (iterator.hasNext()) {
+                ClientModel client=iterator.next();
+                if (!client.checkLiveliness()) {
+                    System.out.println(client.toString() + " was removed due to inactivity.");
+                    clients.remove(client);
+                }
+                try {
+                    sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-        } while(gotPing);
-        clientModel.die();
+        }
     }
 
-    public void getPinged(){
-        gotPing = true;
-    }
 }
