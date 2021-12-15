@@ -70,6 +70,21 @@ public class ScannerThread extends Thread{
                     getTopics().add(topic);
                 }
 
+                if(resp.contains("User left")) {
+                    String leaverName = resp.substring(resp.indexOf(":")+1);
+                    for(KafkaTopic t : getTopics())
+                    {
+                        if (t.getConnectedUserName().equals(leaverName)) {
+                            if(t.isActive()){
+                                t.setActive(false);
+                                t.getPt().stop();
+                                t.getCt().stop();
+                                state = clientState.Idle;
+                            }
+                            getTopics().remove(t);
+                        }
+                    }
+                }
 
                 if(resp.contains("Successfully created topics"))
                 {

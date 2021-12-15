@@ -7,8 +7,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static common.ConnectionConstants.pingingPort;
 
@@ -16,7 +18,7 @@ public class ClientApplication {
     private static final int expectedArgs = 1;
     private static final String expectedArgsMeanings = "<ip>";
 
-    private static List<KafkaTopic> topics = new ArrayList<>();
+    private static ConcurrentLinkedQueue<KafkaTopic> topics = new ConcurrentLinkedQueue<>();
 
     private static ServerModel server;
 
@@ -29,7 +31,7 @@ public class ClientApplication {
             "/mymessages -display unread messages from topics\n"+
             "/mymessages-a -display all topics in which the user is connected\n";
 
-    public static List<KafkaTopic> getTopics() {
+    public static ConcurrentLinkedQueue<KafkaTopic> getTopics() {
         return topics;
     }
 
@@ -84,7 +86,9 @@ public class ClientApplication {
                             System.out.println("You have no open topics.");
                     }
                     else {
-                        if (topics.stream()
+                        ArrayList<KafkaTopic> reversedTopics = new ArrayList<>(topics);
+                        //Collections.reverse(reversedTopics);
+                        if (reversedTopics.stream()
                                 .filter(topic -> topic.getUnreadMessageCount() > 0).findAny().isPresent()) {
                             topics.stream()
                                     .filter(topic -> topic.getUnreadMessageCount() > 0)

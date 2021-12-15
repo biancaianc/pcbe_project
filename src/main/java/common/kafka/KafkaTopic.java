@@ -69,14 +69,13 @@ public class KafkaTopic {
 
     public void printUnreadMessages(){
         unreadMessages.forEach(msg -> System.out.println(msg));
+        unreadMessages.clear();
         unreadMessageCount=0;
     }
 
     public void addUnreadMessage(String message){
         unreadMessages.add(message);
         unreadMessageCount++;
-        ClientApplication.getTopics().remove(this);
-        ClientApplication.getTopics().add(0,this);
     }
 
 

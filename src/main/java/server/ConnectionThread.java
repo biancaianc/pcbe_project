@@ -39,11 +39,15 @@ public class ConnectionThread extends Thread {
                         //TODO log all requests sent to server
                         if(client.getName()==null) {
                             if (ServerApplication.clients.stream().anyMatch(client -> request.equals(client.getName())))
-                                out.println("Nickname is already in use.");
+                                out.println("Nickname is already in use. Set a valid nickname.");
                             else {
-                                client.setName(request);
-                                out.println("Nickname saved successfully.");
-                                System.out.println("Client with ip " + client.getAddress() + " set his nickname: " + request);
+                                if (request.startsWith("/") || request.equals("everyone")) {
+                                    out.println("Illegal nickname. Set a valid nickname.");
+                                } else {
+                                    client.setName(request);
+                                    out.println("Nickname saved successfully.");
+                                    System.out.println("Client with ip " + client.getAddress() + " set his nickname: " + request);
+                                }
                             }
                             out.flush();
                         }
