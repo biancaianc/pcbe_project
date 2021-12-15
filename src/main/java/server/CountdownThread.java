@@ -21,6 +21,7 @@ public class CountdownThread extends Thread {
                 if (!client.checkLiveliness()) {
                     System.out.println(client.toString() + " was removed due to inactivity.");
                     clients.remove(client);
+                    announceClientLeft(client);
                 }
                 try {
                     sleep(100);
@@ -30,5 +31,15 @@ public class CountdownThread extends Thread {
             }
         }
     }
+
+    private void announceClientLeft(ClientModel leaver)
+    {
+        Iterator<ClientModel> iterator = clients.iterator();
+        while (iterator.hasNext()) {
+            ClientModel client=iterator.next();
+            client.getMessagingThread().send("User left. Remove topic:"+leaver.getName());
+        }
+    }
+
 
 }
